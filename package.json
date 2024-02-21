@@ -5,7 +5,7 @@
   "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "startdev": "nodemon app.ts"
+    "start": "nodemon server.ts"
   },
   "author": "Silas O.",
   "license": "ISC",
