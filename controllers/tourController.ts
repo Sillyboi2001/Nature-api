@@ -13,6 +13,16 @@ const tours: Tour[] = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data.json`, 'utf-8'),
 );
 
+const checkId = (req: Request, res: Response, next: any, value: number) => {
+  if (value > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+  next()
+}
+
 const getAllTours = (req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
@@ -26,12 +36,6 @@ const getAllTours = (req: Request, res: Response) => {
 const getTour = (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
   const tour = tours.find((el: Tour) => el.id === id);
-  if (id > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
 
   res.status(200).json({
     status: 'success',
@@ -40,6 +44,16 @@ const getTour = (req: Request, res: Response) => {
     },
   });
 };
+
+const checkBody = (req: Request, res: Response, next: any) => {
+  if( !req.body.name || !req.body.price) {
+    return res.status(400).json({
+      status: 'error',
+      message: "Missing name or price"
+    })
+  }
+  next()
+}
 
 const createTour = (req: Request, res: Response) => {
   const newId = tours[tours.length - 1].id + 1;
@@ -62,14 +76,6 @@ const createTour = (req: Request, res: Response) => {
 };
 
 const updateTour = (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  if (id > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
   res.status(200).json({
     status: 'success',
     data: {
@@ -79,18 +85,10 @@ const updateTour = (req: Request, res: Response) => {
 };
 
 const deleteTour = (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  if (id > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
   res.status(204).json({
     status: 'success',
     data: null,
   });
 };
 
-export { getAllTours, createTour, getTour, updateTour, deleteTour };
+export { getAllTours, createTour, getTour, updateTour, deleteTour, checkId, checkBody };

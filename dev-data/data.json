@@ -40,5 +40,12 @@
     "description": "Walk through history in the streets of Rome, Florence, and Venice.",
     "durationDays": 10,
     "price": 1999.99
+  },
+  {
+    "id": 7,
+    "name": "Discover the Alps",
+    "description": "Experience the breathtaking views and unique cultures of the Alpine region.",
+    "durationDays": 7,
+    "price": "1299.99"
   }
 ]
