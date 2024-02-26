@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Tour from '../models/tourModels';
+import ApiFeatures from '../utils/apiFeatures';
 
 // const tours: Tour[] = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data.json`, 'utf-8'),
@@ -15,19 +16,22 @@ import Tour from '../models/tourModels';
 // next()
 // }
 
+const prefilTour = (req: Request, res: Response, next: any) => {
+  req.query.limit = '5';
+  req.query.fields = 'name,price,summary,difficulty,durationDays';
+  req.query.sort = '-price';
+  next();
+};
+
+
 const getAllTours = async (req: Request, res: Response) => {
   try {
-    // Filtering
-    const queryObj = { ...req.query };
-    const excludeFields = ['page', 'sort', 'limit', 'fields'];
-    excludeFields.forEach((el) => delete queryObj[el]);
-
-    // Adv filtering
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-    const query = Tour.find(JSON.parse(queryStr));
-    const tours = await query;
+    const features = new ApiFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .fieldLimits()
+      .pagination();
+    const tours = await features.query;
     res.status(200).json({
       status: 'success',
       result: tours.length,
@@ -122,4 +126,4 @@ const deleteTour = async (req: Request, res: Response) => {
   }
 };
 
-export { getAllTours, createTour, getTour, updateTour, deleteTour };
+export { getAllTours, createTour, getTour, updateTour, deleteTour, prefilTour };
