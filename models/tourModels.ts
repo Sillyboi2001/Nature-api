@@ -1,12 +1,5 @@
 import mongoose from 'mongoose';
 
-interface Tour {
-  name: string;
-  description: string;
-  durationDays: number;
-  price: number;
-}
-
 const tourSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -16,6 +9,7 @@ const tourSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true,
+    trim: true
   },
   durationDays: {
     type: Number,
@@ -24,6 +18,38 @@ const tourSchema = new mongoose.Schema({
   price: {
     type: Number,
   },
+  ratingsAverage: {
+    type: Number,
+    default: 4.5,
+  },
+  ratingsQuantity: {
+    type: Number,
+    default: 0,
+  },
+  maxGroupSize: {
+    type: Number,
+    required: [true, 'A tour must have maxgroup size'],
+  },
+  difficulty: {
+    type: String,
+    required: [true, 'A tour must have difficulty']
+  },
+  priceDiscount: Number,
+  summary: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  imageCover: {
+    type: String,
+    required: true
+  },
+  images: [String],
+  createdAt: {
+    type: Date,
+    default: Date.now()
+  },
+  startDates: [String],
 });
 
 const Tour = mongoose.model('Tour', tourSchema);
