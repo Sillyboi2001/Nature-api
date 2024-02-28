@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Query } from 'mongoose';
 
 const tourSchema = new mongoose.Schema({
   name: {
@@ -32,7 +32,11 @@ const tourSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    required: [true, 'A tour must have difficulty']
+    required: [true, 'A tour must have difficulty'],
+    enum: {
+      values: ['easy', 'medium', 'difficult'],
+      message: 'Difficulty is either easy, medium or difficult'
+    }
   },
   priceDiscount: Number,
   summary: {
@@ -50,7 +54,24 @@ const tourSchema = new mongoose.Schema({
     default: Date.now()
   },
   startDates: [Date],
+  secretTour: {
+    type: Boolean,
+    default: false
+  }
 });
+
+// Query middleware
+
+tourSchema.pre<Query<any[], any>>(/^find/, function(next) {
+  this.find({ secretTour: { $ne: true } })
+  next()
+})
+
+tourSchema.pre('aggregate', function(next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } })
+  console.log(this.pipeline())
+  next()
+})
 
 const Tour = mongoose.model('Tour', tourSchema);
 
