@@ -1,4 +1,5 @@
 import express from 'express';
+import signUp from '../controllers/authController';
 import {
   getAllUsers,
   createUser,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/userController';
 
 const userRouter = express.Router();
+
+userRouter.route('/signup').post(signUp);
 
 userRouter.route('/').get(getAllUsers).post(createUser);
 

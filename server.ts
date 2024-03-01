@@ -3,10 +3,6 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import Tour from './models/tourModels';
 
-process.on('uncaughtException', err => {
-  process.exit(1)
-})
-
 dotenv.config();
 import app from './app';
 
