@@ -2,9 +2,9 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import fs from 'fs';
 import Tour from './models/tourModels';
-import app from './app';
 
 dotenv.config();
+import app from './app';
 
 const port = 3000;
 

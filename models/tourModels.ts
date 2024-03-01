@@ -61,17 +61,15 @@ const tourSchema = new mongoose.Schema({
 });
 
 // Query middleware
-
 tourSchema.pre<Query<any[], any>>(/^find/, function(next) {
   this.find({ secretTour: { $ne: true } })
   next()
 })
 
 tourSchema.pre('aggregate', function(next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } })
-  console.log(this.pipeline())
-  next()
-})
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  next();
+});
 
 const Tour = mongoose.model('Tour', tourSchema);
 
