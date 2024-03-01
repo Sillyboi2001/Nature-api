@@ -1,9 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 import AppError from '../utils/appError';
 
-const handleCastError = (err: AppError) => {
+const handleCastErrorDB = (err: AppError) => {
   const message = `Invalid ${err.path}: ${err.value}.`
   return new AppError(message, 404)
+}
+
+const handleDuplicateFieldsDB = (err: AppError) => {
+  const fieldName = err.keyValue ? Object.keys(err.keyValue)[0] : 'Unknown Field';
+  const fieldValue = err.keyValue ? err.keyValue[fieldName] : 'Unknown Value';
+  const message = `Duplicate field value: ${fieldValue}. Please use another value for ${fieldName}!`;
+  return new AppError(message, 400);
+}
+
+const handleValidationErr = (err: AppError) => {
+  const errors = Object.values(err.errors).map(el => el.message)
+  const message = `Invalid input data. ${errors.join('. ')}`
+  return new AppError(message, 400)
 }
 
 const sendErrorDev = (err: AppError, res: Response) => {
@@ -46,9 +59,11 @@ const GlobalErrorHandler = (
   }
   if(process.env.NODE_ENV === 'production') {
     let error = { ...err };
-    console.log(error)
 
-    if(error.kind === 'ObjectId') error = handleCastError(error)
+    if(error.kind === 'ObjectId') error = handleCastErrorDB(error)
+    if(error.code === 11000) error = handleDuplicateFieldsDB(error)
+    if(error._message === 'Tour validation failed') error = handleValidationErr(error)
+
     setErrorProd(error, res)
   }
 };

@@ -3,6 +3,10 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import Tour from './models/tourModels';
 
+process.on('uncaughtException', err => {
+  process.exit(1)
+})
+
 dotenv.config();
 import app from './app';
 
@@ -40,6 +44,14 @@ if (process.argv[2] === '--import') {
   deleteData()
 }
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
+
+// Handling unhandled rejections
+process.on('unhandledRejection', err => {
+  server.close(() => {
+    process.exit(1)
+  })
+})
+

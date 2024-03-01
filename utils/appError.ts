@@ -4,9 +4,22 @@ export default class GlobalError extends Error {
   isOperational: boolean;
   path: string;
   value: string;
-  kind: string
+  kind: string;
+  code: number;
+  keyValue: any;
+  errors: object;
+  _message: string;
 
-  constructor(message: string, statusCode: number, path: string = '', value: string = '', kind: string = '') {
+  constructor(
+    message: string,
+    statusCode: number,
+    errors: object = [],
+    path: string = '',
+    value: string = '',
+    kind: string = '',
+    code: number = 0,
+    _message: string = ''
+  ) {
     super(message);
 
     this.statusCode = statusCode;
@@ -15,7 +28,11 @@ export default class GlobalError extends Error {
     this.path = path;
     this.value = value;
     this.kind = kind;
+    this.code = code;
+    this.keyValue = this.keyValue;
+    this.errors = errors;
+    this._message = message;
 
-    Error.captureStackTrace(this, this.constructor)
+    Error.captureStackTrace(this, this.constructor);
   }
 }
