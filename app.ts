@@ -10,6 +10,9 @@ if(process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 app.use(express.json())
+app.use((req: Request, res: Response, next: NextFunction) => {
+  next()
+})
 app.use('/api/v1/tours', tourRouter)
 app.use('/api/v1/users', userRouter)
 

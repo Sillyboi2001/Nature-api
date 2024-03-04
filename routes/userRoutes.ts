@@ -1,5 +1,5 @@
 import express from 'express';
-import signUp from '../controllers/authController';
+import { signUp, login } from '../controllers/authController';
 import {
   getAllUsers,
   createUser,
@@ -11,6 +11,8 @@ import {
 const userRouter = express.Router();
 
 userRouter.route('/signup').post(signUp);
+
+userRouter.route('/login').post(login)
 
 userRouter.route('/').get(getAllUsers).post(createUser);
 

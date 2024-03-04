@@ -11,7 +11,10 @@ interface User extends Document {
   photo: string;
   password: string;
   confirmPassword?: string;
+  passwordChangedAt: Date;
   isModified: (path: string) => boolean;
+  correctPassword: (password: string, userPassword: string) => Promise<boolean>;
+  changedPassword(path?: number): boolean;
 }
 
 const userSchema = new mongoose.Schema({
@@ -33,6 +36,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'A password is required'],
     minlength: 6,
+    select: false,
   },
   confirmPassword: {
     type: String,
@@ -44,6 +48,9 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Passwords are not the same',
     },
+  },
+  passwordChangedAt: {
+    type: Date,
   },
 });
 
@@ -58,7 +65,20 @@ userSchema.pre<User>(
     next();
   },
 );
+userSchema.methods.correctPassword = async function (
+  password: string,
+  userPassword: string,
+): Promise<boolean> {
+  return await bcrypt.compare(password, userPassword);
+};
 
-const User = mongoose.model('User', userSchema);
+userSchema.methods.changedPassword = function (JWTTimestamp: number): boolean {
+  if (this.passwordChangedAt) {
+    const changeTimeStamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
+    return JWTTimestamp < changeTimeStamp;
+  }
+  return false;
+};
+const User = mongoose.model<User>('User', userSchema);
 
 export default User;

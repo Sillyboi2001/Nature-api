@@ -9,6 +9,7 @@ import {
   tourStats,
   getMonthlyPlan
 } from '../controllers/tourController';
+import { protectRoutes } from '../controllers/authController';
 
 const tourRouter = express.Router();
 
@@ -20,7 +21,7 @@ tourRouter.route('/tourStats').get(tourStats);
 
 tourRouter.route('/monthlyPlan/:year').get(getMonthlyPlan);
 
-tourRouter.route('/').get(getAllTours).post(createTour);
+tourRouter.route('/').get(protectRoutes, getAllTours).post(createTour);
 
 tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 

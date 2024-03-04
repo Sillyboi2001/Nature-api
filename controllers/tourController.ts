@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Tour from '../models/tourModels';
 import ApiFeatures from '../utils/apiFeatures';
 import asyncError from '../utils/asyncError';
-import AppError from '../utils/appError'
+import AppError from '../utils/appError';
 
 // const tours: Tour[] = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data.json`, 'utf-8'),

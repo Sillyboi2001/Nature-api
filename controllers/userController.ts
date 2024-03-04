@@ -1,11 +1,14 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import User from '../models/userModels';
+import asyncError from '../utils/asyncError';
 
-const getAllUsers = (req: Request, res: Response) => {
-  return res.status(500).json({
-    status: 'error',
-    message: 'This route is not defined yet',
+const getAllUsers = asyncError(async (req: Request, res: Response, next: NextFunction) => {
+  const users = await User.find()
+  res.status(200).json({
+    status: 'sucess',
+    users,
   });
-};
+});
 
 const createUser = (req: Request, res: Response) => {
   return res.status(500).json({
