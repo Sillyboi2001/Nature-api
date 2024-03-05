@@ -6,18 +6,18 @@ import userRouter from './routes/userRoutes';
 import AppError from './utils/appError';
 
 const app = express();
-if(process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'))
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 }
-app.use(express.json())
-app.use('/api/v1/tours', tourRouter)
-app.use('/api/v1/users', userRouter)
+app.use(express.json());
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
 // Handling unhandled routes
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
-  next(new AppError(`Cant't find ${req.originalUrl} on this server`, 404))
-})
+  next(new AppError(`Cant't find ${req.originalUrl} on this server`, 404));
+});
 
-app.use(GlobalErrorHandler)
+app.use(GlobalErrorHandler);
 
 export default app;

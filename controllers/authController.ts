@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import asyncError from '../utils/asyncError';
 import User from '../models/userModels';
 import AppError from '../utils/appError';
-import { nextTick } from 'process';
+import sendEmail from '../utils/email';
 
 declare global {
   namespace Express {
@@ -93,18 +94,95 @@ const protectRoutes = asyncError(
       );
     }
     // Grant access
-    req.user = user
+    req.user = user;
     next();
   },
 );
 
 const restrictUser = (...roles: any[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if(!roles.includes(req.user?.role)) {
-      return next(new AppError('You do not have access to perform this action', 403))
+    if (!roles.includes(req.user?.role)) {
+      return next(
+        new AppError('You do not have access to perform this action', 403),
+      );
     }
-    next()
-  }
-}
+    next();
+  };
+};
 
-export { signUp, login, protectRoutes, restrictUser };
+const forgotPassword = asyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    //Check if email exists
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return next(new AppError('This email address does not exist', 404));
+    }
+    //Generate token
+    const resetToken = user.generatePasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    //Send to the users email
+    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}\nIf you didnt forget your password.Ignore this email`;
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Your password token is valid for 10 minutes',
+        message,
+      });
+      res.status(200).json({
+        status: 'success',
+        message: 'Token has been sent to your mail',
+      });
+    } catch (err) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return next(
+        new AppError(
+          'There was an error sending the mail.Please try again',
+          500,
+        ),
+      );
+    }
+  },
+);
+
+const resetPassword = asyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // Get user based  on token
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    //Check if there's user and set the password
+    if (!user) {
+      return next(new AppError('Token is invalid or has expired', 400));
+    }
+    user.password = req.body.password;
+    user.confirmPassword = req.body.confirmPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    const token = signToken(user._id);
+    res.status(200).json({
+      status: 'success',
+      token,
+    });
+  },
+);
+
+export {
+  signUp,
+  login,
+  protectRoutes,
+  restrictUser,
+  forgotPassword,
+  resetPassword,
+};

@@ -4,6 +4,7 @@ import mongoose, {
 } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 interface User extends Document {
   name: string;
@@ -13,9 +14,12 @@ interface User extends Document {
   role: string;
   confirmPassword?: string;
   passwordChangedAt: Date;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
   isModified: (path: string) => boolean;
   correctPassword: (password: string, userPassword: string) => Promise<boolean>;
   changedPassword(path?: number): boolean;
+  generatePasswordResetToken: () => void;
 }
 
 const userSchema = new mongoose.Schema({
@@ -36,7 +40,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ['user', 'guide', 'lead-guide', 'admin'],
-    default: 'user'
+    default: 'user',
   },
   password: {
     type: String,
@@ -58,6 +62,12 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: {
     type: Date,
   },
+  passwordResetToken: {
+    type: String,
+  },
+  passwordResetExpires: {
+    type: Date,
+  },
 });
 
 userSchema.pre<User>(
@@ -71,6 +81,17 @@ userSchema.pre<User>(
     next();
   },
 );
+
+userSchema.pre<User>(
+  'save',
+  function (next: CallbackWithoutResultAndOptionalError) {
+    if (!this.isModified('password') || this.isNew) return next();
+
+    this.passwordChangedAt = new Date(Date.now() - 1000);
+    next();
+  },
+);
+
 userSchema.methods.correctPassword = async function (
   password: string,
   userPassword: string,
@@ -85,6 +106,18 @@ userSchema.methods.changedPassword = function (JWTTimestamp: number): boolean {
   }
   return false;
 };
+
+userSchema.methods.generatePasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; //In milliseconds
+
+  return resetToken;
+};
+
 const User = mongoose.model<User>('User', userSchema);
 
 export default User;

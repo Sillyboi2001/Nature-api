@@ -18,7 +18,7 @@ export default class GlobalError extends Error {
     value: string = '',
     kind: string = '',
     code: number = 0,
-    _message: string = ''
+    _message: string = '',
   ) {
     super(message);
 

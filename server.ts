@@ -12,32 +12,34 @@ const db = process.env.DATABASE_URL as string;
 
 mongoose.connect(db).then(() => console.log('Database is connected'));
 
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/tours.json`, 'utf-8'))
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/tours.json`, 'utf-8'),
+);
 
 const importData = async () => {
   try {
-    await Tour.create(tours)
-    console.log("Data import successful")
-  } catch(err) {
-    console.log(err)
+    await Tour.create(tours);
+    console.log('Data import successful');
+  } catch (err) {
+    console.log(err);
   }
-  process.exit()
-}
+  process.exit();
+};
 
 const deleteData = async () => {
   try {
-    await Tour.deleteMany()
-    console.log("Data deleted")
-  } catch(err) {
-    console.log(err)
+    await Tour.deleteMany();
+    console.log('Data deleted');
+  } catch (err) {
+    console.log(err);
   }
-  process.exit()
-}
+  process.exit();
+};
 
 if (process.argv[2] === '--import') {
-  importData()
+  importData();
 } else if (process.argv[2] === '--delete') {
-  deleteData()
+  deleteData();
 }
 
 const server = app.listen(port, () => {
@@ -45,9 +47,8 @@ const server = app.listen(port, () => {
 });
 
 // Handling unhandled rejections
-process.on('unhandledRejection', err => {
+process.on('unhandledRejection', (err) => {
   server.close(() => {
-    process.exit(1)
-  })
-})
-
+    process.exit(1);
+  });
+});
