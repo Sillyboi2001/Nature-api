@@ -15,7 +15,7 @@ const tourRouter = express.Router();
 
 // tourRouter.param('id', checkId);
 
-tourRouter.route('/topTours').get(prefilTour, getAllTours);
+tourRouter.get('/topTours', prefilTour, getAllTours);
 
 tourRouter.route('/tourStats').get(tourStats);
 

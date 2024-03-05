@@ -5,6 +5,14 @@ import asyncError from '../utils/asyncError';
 import User from '../models/userModels';
 import AppError from '../utils/appError';
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User;
+    }
+  }
+}
+
 const secret = process.env.JWT_SECRET as string;
 
 const signToken = (id: string) => {
@@ -83,7 +91,7 @@ const protectRoutes = asyncError(
       );
     }
     // Grant access
-    req.user = user;
+    req.user = user
     next();
   },
 );
