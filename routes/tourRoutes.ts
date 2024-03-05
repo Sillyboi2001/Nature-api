@@ -9,13 +9,13 @@ import {
   tourStats,
   getMonthlyPlan
 } from '../controllers/tourController';
-import { protectRoutes } from '../controllers/authController';
+import { protectRoutes, restrictUser } from '../controllers/authController';
 
 const tourRouter = express.Router();
 
 // tourRouter.param('id', checkId);
 
-tourRouter.get('/topTours', prefilTour, getAllTours);
+tourRouter.route('/topTours').get(prefilTour, getAllTours);
 
 tourRouter.route('/tourStats').get(tourStats);
 
@@ -23,6 +23,6 @@ tourRouter.route('/monthlyPlan/:year').get(getMonthlyPlan);
 
 tourRouter.route('/').get(protectRoutes, getAllTours).post(createTour);
 
-tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(protectRoutes, restrictUser('admin', 'lead-guide'), deleteTour);
 
 export default tourRouter;

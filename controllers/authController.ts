@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import asyncError from '../utils/asyncError';
 import User from '../models/userModels';
 import AppError from '../utils/appError';
+import { nextTick } from 'process';
 
 declare global {
   namespace Express {
@@ -27,6 +28,7 @@ const signUp = asyncError(
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
+      role: req.body.role,
       confirmPassword: req.body.confirmPassword,
       passwordChangedAt: req.body.passwordChangedAt,
     });
@@ -96,4 +98,13 @@ const protectRoutes = asyncError(
   },
 );
 
-export { signUp, login, protectRoutes };
+const restrictUser = (...roles: any[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if(!roles.includes(req.user?.role)) {
+      return next(new AppError('You do not have access to perform this action', 403))
+    }
+    next()
+  }
+}
+
+export { signUp, login, protectRoutes, restrictUser };
