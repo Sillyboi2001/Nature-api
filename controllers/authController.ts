@@ -178,6 +178,29 @@ const resetPassword = asyncError(
   },
 );
 
+const updatePassword = asyncError(async (req: Request, res: Response, next: NextFunction) => {
+  // Get user from the database
+  const user = await User.findById(req.user?.id).select('+password')
+  // Check if user exists
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+  //Check if the input password is correct
+  if(!(await user.correctPassword(req.body.currentPassword, user.password))) {
+    return next(new AppError('Your current password is wrong', 401))
+  }
+  //Update the password
+  user.password = req.body.password
+  user.confirmPassword = req.body.confirmPassword
+  await user.save()
+
+  const token = signToken(user._id);
+    res.status(200).json({
+      status: 'success',
+      token,
+    });
+})
+
 export {
   signUp,
   login,
@@ -185,4 +208,5 @@ export {
   restrictUser,
   forgotPassword,
   resetPassword,
+  updatePassword,
 };

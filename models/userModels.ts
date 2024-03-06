@@ -1,6 +1,7 @@
 import mongoose, {
   Document,
   CallbackWithoutResultAndOptionalError,
+  Query
 } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
@@ -16,10 +17,11 @@ interface User extends Document {
   passwordChangedAt: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
+  active: boolean;
   isModified: (path: string) => boolean;
   correctPassword: (password: string, userPassword: string) => Promise<boolean>;
   changedPassword(path?: number): boolean;
-  generatePasswordResetToken: () => void;
+  generatePasswordResetToken: () => any;
 }
 
 const userSchema = new mongoose.Schema({
@@ -68,6 +70,11 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: {
     type: Date,
   },
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
+  }
 });
 
 userSchema.pre<User>(
@@ -91,6 +98,11 @@ userSchema.pre<User>(
     next();
   },
 );
+
+userSchema.pre<Query<any[], any>>(/^find/, function(next) {
+  this.find({ active: { $ne: false } })
+  next()
+})
 
 userSchema.methods.correctPassword = async function (
   password: string,

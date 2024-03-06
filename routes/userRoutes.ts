@@ -5,19 +5,27 @@ import {
   createUser,
   getUser,
   updateUser,
+  updateCurrentUser,
   deleteUser,
+  deleteCurrentUser,
 } from '../controllers/userController';
-import { forgotPassword, resetPassword } from '../controllers/authController';
+import { forgotPassword, resetPassword, updatePassword, protectRoutes } from '../controllers/authController';
 
 const userRouter = express.Router();
 
-userRouter.route('/signup').post(signUp);
+userRouter.post('/signup', signUp);
 
-userRouter.route('/login').post(login);
+userRouter.post('/login', login);
 
-userRouter.route('/forgotPassword').post(forgotPassword);
+userRouter.post('/forgotPassword', forgotPassword);
 
-userRouter.route('/resetPassword/:token').patch(resetPassword);
+userRouter.patch('/resetPassword/:token', resetPassword);
+
+userRouter.patch('/updateMyPassword', protectRoutes, updatePassword);
+
+userRouter.patch('/updateMyData', protectRoutes, updateCurrentUser);
+
+userRouter.delete('/deleteMyData', protectRoutes, deleteCurrentUser)
 
 userRouter.route('/').get(getAllUsers).post(createUser);
 
