@@ -15,13 +15,45 @@ declare global {
   }
 }
 
+interface user {
+  _id: string,
+  password?: string
+}
+
+interface Cookie {
+  expires: Date,
+  httpOnly: boolean,
+  secure: boolean
+}
+
 const secret = process.env.JWT_SECRET as string;
+const cookieExpires = Number(process.env.JWT_COOKIE_EXPIRES_IN)
 
 const signToken = (id: string) => {
   return jwt.sign({ id }, secret, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
+
+const sendToken = (user: user, status: number, res: Response) => {
+  const token = signToken(user._id);
+  const cookieOptions: Cookie = {
+    expires: new Date(Date.now() + cookieExpires * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: false,
+  }
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true
+  res.cookie('jwt', token, cookieOptions)
+  //remove password from output
+  user.password = undefined;
+    res.status(status).json({
+      status: 'success',
+      token,
+      data: {
+        user,
+      },
+    });
+}
 
 const signUp = asyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -33,14 +65,7 @@ const signUp = asyncError(
       confirmPassword: req.body.confirmPassword,
       passwordChangedAt: req.body.passwordChangedAt,
     });
-    const token = signToken(newUser._id);
-    res.status(201).json({
-      status: 'success',
-      token,
-      data: {
-        user: newUser,
-      },
-    });
+    sendToken(newUser, 201, res)
   },
 );
 
@@ -57,11 +82,7 @@ const login = asyncError(
       return next(new AppError('Incorrect email or password', 401));
 
     // Return a jwt token
-    const token = signToken(user._id);
-    res.status(200).json({
-      status: 'success',
-      token,
-    });
+    sendToken(user, 200, res)
   },
 );
 
@@ -170,11 +191,7 @@ const resetPassword = asyncError(
     user.passwordResetExpires = undefined;
     await user.save();
 
-    const token = signToken(user._id);
-    res.status(200).json({
-      status: 'success',
-      token,
-    });
+    sendToken(user, 200, res)
   },
 );
 
@@ -194,11 +211,7 @@ const updatePassword = asyncError(async (req: Request, res: Response, next: Next
   user.confirmPassword = req.body.confirmPassword
   await user.save()
 
-  const token = signToken(user._id);
-    res.status(200).json({
-      status: 'success',
-      token,
-    });
+  sendToken(user, 200, res)
 })
 
 export {
