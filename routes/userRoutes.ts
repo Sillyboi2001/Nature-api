@@ -9,7 +9,13 @@ import {
   deleteUser,
   deleteCurrentUser,
 } from '../controllers/userController';
-import { forgotPassword, resetPassword, updatePassword, protectRoutes } from '../controllers/authController';
+import {
+  forgotPassword,
+  resetPassword,
+  updatePassword,
+  protectRoutes,
+  restrictUser,
+} from '../controllers/authController';
 
 const userRouter = express.Router();
 
@@ -25,7 +31,12 @@ userRouter.patch('/updateMyPassword', protectRoutes, updatePassword);
 
 userRouter.patch('/updateMyData', protectRoutes, updateCurrentUser);
 
-userRouter.delete('/deleteMyData', protectRoutes, deleteCurrentUser)
+userRouter.delete('/deleteMyData', protectRoutes, deleteCurrentUser);
+
+userRouter
+  .route('/:id')
+  .patch(protectRoutes, updateUser)
+  .delete(protectRoutes, deleteUser);
 
 userRouter.route('/').get(getAllUsers).post(createUser);
 

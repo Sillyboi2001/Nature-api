@@ -3,6 +3,7 @@ import Tour from '../models/tourModels';
 import ApiFeatures from '../utils/apiFeatures';
 import asyncError from '../utils/asyncError';
 import AppError from '../utils/appError';
+import { createOne, updateOne, deleteOne } from './factoryController';
 
 // const tours: Tour[] = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data.json`, 'utf-8'),
@@ -41,18 +42,20 @@ const getAllTours = asyncError(async (req: Request, res: Response) => {
   });
 });
 
-const getTour = asyncError(async (req: Request, res: Response, next: NextFunction) => {
-  const tour = await Tour.findById(req.params.id);
-  if(!tour) {
-    return next(new AppError(`Can't find tour with that ID`, 404))
-  };
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
-});
+const getTour = asyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const tour = await Tour.findById(req.params.id).populate('reviews');
+    if (!tour) {
+      return next(new AppError(`Can't find tour with that ID`, 404));
+    }
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
+  },
+);
 
 // const checkBody = (req: Request, res: Response, next: any) => {
 //   if( !req.body.name || !req.body.price) {
@@ -64,42 +67,22 @@ const getTour = asyncError(async (req: Request, res: Response, next: NextFunctio
 //   next()
 // }
 
-const createTour = asyncError(async (req: Request, res: Response) => {
-  const newTour = await Tour.create(req.body);
-  res.status(200).json({
-    status: 'success',
-    data: {
-      newTour,
-    },
-  });
-});
+const createTour = createOne(Tour);
 
-const updateTour = asyncError(async (req: Request, res: Response, next: NextFunction) => {
-    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if(!tour) {
-      return next(new AppError(`Can't find tour with that ID`, 404))
-    };
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    });
-});
+const updateTour = updateOne(Tour);
 
-const deleteTour = asyncError(async (req: Request, res: Response, next: NextFunction) => {
-  const tour = await Tour.findByIdAndDelete(req.params.id);
-  if(!tour) {
-    return next(new AppError(`Can't find tour with that ID`, 404))
-  };
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
-});
+const deleteTour = deleteOne(Tour);
+
+// const deleteTour = asyncError(async (req: Request, res: Response, next: NextFunction) => {
+//   const tour = await Tour.findByIdAndDelete(req.params.id);
+//   if(!tour) {
+//     return next(new AppError(`Can't find tour with that ID`, 404))
+//   };
+//   res.status(204).json({
+//     status: 'success',
+//     data: null,
+//   });
+// });
 
 const tourStats = asyncError(async (req: Request, res: Response) => {
   const stats = await Tour.aggregate([
