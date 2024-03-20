@@ -1,28 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncError from '../utils/asyncError';
 import Review from '../models/reviewModels';
-import { createOne, updateOne, deleteOne } from './factoryController';
-
-const getAllReviews = asyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    let filter = {};
-    if (req.params.tourId) filter = { tour: req.params.tourId };
-    const reviews = await Review.find(filter);
-    res.status(200).json({
-      status: 'success',
-      result: reviews.length,
-      data: {
-        reviews,
-      },
-    });
-  },
-);
+import { getAll, getOne, createOne, updateOne, deleteOne } from './factoryController';
 
 const getTourAndUserIds = (req: Request, res: Response, next: NextFunction) => {
   if (!req.body.tour) req.body.tour = req.params.tourId;
   if (!req.body.user) req.body.user = req.user?.id;
   next();
 };
+
+const getAllReviews = getAll(Review)
+
+const getReview = getOne(Review)
+
 const createReview = createOne(Review);
 
 const updateReview = updateOne(Review);
@@ -34,5 +23,6 @@ export {
   createReview,
   updateReview,
   deleteReview,
+  getReview,
   getTourAndUserIds,
 };

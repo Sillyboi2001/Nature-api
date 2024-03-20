@@ -2,9 +2,9 @@ import express from 'express';
 import { signUp, login } from '../controllers/authController';
 import {
   getAllUsers,
-  createUser,
   getUser,
   updateUser,
+  getMe,
   updateCurrentUser,
   deleteUser,
   deleteCurrentUser,
@@ -20,25 +20,23 @@ import {
 const userRouter = express.Router();
 
 userRouter.post('/signup', signUp);
-
 userRouter.post('/login', login);
-
 userRouter.post('/forgotPassword', forgotPassword);
-
 userRouter.patch('/resetPassword/:token', resetPassword);
 
-userRouter.patch('/updateMyPassword', protectRoutes, updatePassword);
+// Protect all routes after this middleware
+userRouter.use(protectRoutes);
 
-userRouter.patch('/updateMyData', protectRoutes, updateCurrentUser);
+userRouter.patch('/updateMyPassword', updatePassword);
 
-userRouter.delete('/deleteMyData', protectRoutes, deleteCurrentUser);
+userRouter.get('/me', getMe, getUser);
 
-userRouter
-  .route('/:id')
-  .patch(protectRoutes, updateUser)
-  .delete(protectRoutes, deleteUser);
+userRouter.patch('/updateMyData', updateCurrentUser);
+userRouter.delete('/deleteMyData', deleteCurrentUser);
 
-userRouter.route('/').get(getAllUsers).post(createUser);
+userRouter.use(restrictUser('admin'));
+
+userRouter.route('/').get(getAllUsers);
 
 userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 

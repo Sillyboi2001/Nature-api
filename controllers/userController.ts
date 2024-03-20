@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import User from '../models/userModels';
 import asyncError from '../utils/asyncError';
 import AppError from '../utils/appError';
-import { updateOne, deleteOne } from './factoryController';
+import { getAll, getOne, updateOne, deleteOne } from './factoryController';
 
 const filter = (obj: Record<string, any>, ...allowedFields: any[]) => {
   const newObj: Record<string, any> = {};
@@ -12,16 +12,6 @@ const filter = (obj: Record<string, any>, ...allowedFields: any[]) => {
   return newObj;
 };
 
-const getAllUsers = asyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const users = await User.find();
-    res.status(200).json({
-      status: 'sucess',
-      users,
-    });
-  },
-);
-
 const createUser = (req: Request, res: Response) => {
   return res.status(500).json({
     status: 'error',
@@ -29,12 +19,10 @@ const createUser = (req: Request, res: Response) => {
   });
 };
 
-const getUser = (req: Request, res: Response) => {
-  return res.status(500).json({
-    status: 'error',
-    message: 'This route is not defined yet',
-  });
-};
+const getMe = (req: Request, res: Response, next: NextFunction) => {
+  req.params.id = req.user?.id;
+  next()
+}
 
 const updateCurrentUser = asyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -78,7 +66,10 @@ const deleteCurrentUser = asyncError(
   },
 );
 
-// Do not update password here
+const getAllUsers = getAll(User)
+
+const getUser = getOne(User)
+// Do not update password here and it's only for administrators
 const updateUser = updateOne(User);
 
 const deleteUser = deleteOne(User);
@@ -90,5 +81,6 @@ export {
   updateUser,
   updateCurrentUser,
   deleteUser,
+  getMe,
   deleteCurrentUser,
 };

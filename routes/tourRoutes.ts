@@ -22,14 +22,23 @@ tourRouter.route('/topTours').get(prefilTour, getAllTours);
 
 tourRouter.route('/tourStats').get(tourStats);
 
-tourRouter.route('/monthlyPlan/:year').get(getMonthlyPlan);
+tourRouter
+  .route('/monthlyPlan/:year')
+  .get(
+    protectRoutes,
+    restrictUser('admin', 'lead-guide', 'guide'),
+    getMonthlyPlan,
+  );
 
-tourRouter.route('/').get(protectRoutes, getAllTours).post(createTour);
+tourRouter
+  .route('/')
+  .get(getAllTours)
+  .post(protectRoutes, restrictUser('admin', 'lead-guide'), createTour);
 
 tourRouter
   .route('/:id')
   .get(getTour)
-  .patch(updateTour)
+  .patch(protectRoutes, restrictUser('admin', 'lead-guide'), updateTour)
   .delete(protectRoutes, restrictUser('admin', 'lead-guide'), deleteTour);
 
 export default tourRouter;

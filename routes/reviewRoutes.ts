@@ -4,19 +4,23 @@ import {
   createReview,
   updateReview,
   deleteReview,
+  getReview,
   getTourAndUserIds,
 } from '../controllers/reviewController';
 import { protectRoutes, restrictUser } from '../controllers/authController';
 
 const reviewRouter = express.Router({ mergeParams: true });
 
+reviewRouter.use(protectRoutes)
+
 reviewRouter
   .route('/')
-  .get(protectRoutes, getAllReviews)
-  .post(protectRoutes, restrictUser('user'), getTourAndUserIds, createReview);
+  .get(getAllReviews)
+  .post(restrictUser('user'), getTourAndUserIds, createReview);
 
 reviewRouter
   .route('/:id')
-  .patch(protectRoutes, updateReview)
-  .delete(protectRoutes, deleteReview);
+  .get(getReview)
+  .patch(restrictUser('user', 'admin'), updateReview)
+  .delete(restrictUser('user', 'admin'), deleteReview);
 export default reviewRouter;
